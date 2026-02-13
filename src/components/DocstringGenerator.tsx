@@ -1,8 +1,9 @@
 import { useState, useCallback } from "react";
-import { Upload, Wand2, Copy, Download, RotateCcw } from "lucide-react";
+import { Upload, Wand2, Copy, Download, RotateCcw, GitCompare, Code } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import CodeEditor from "@/components/CodeEditor";
+import DiffView from "@/components/DiffView";
 import StyleSelector from "@/components/StyleSelector";
 import FeatureBar from "@/components/FeatureBar";
 import { useFileUpload } from "@/hooks/useFileUpload";
@@ -34,6 +35,7 @@ export default function DocstringGenerator() {
   const [style, setStyle] = useState("google");
   const [isGenerating, setIsGenerating] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [showDiff, setShowDiff] = useState(false);
 
   const { openFilePicker } = useFileUpload({
     onFileContent: (content, name) => {
@@ -181,14 +183,27 @@ export default function DocstringGenerator() {
             placeholder="Paste your Python code here or upload a .py file..."
           />
           <div className="flex flex-col flex-1 min-h-0">
-            <CodeEditor
-              label="Output — With Docstrings"
-              value={outputCode}
-              readOnly
-              placeholder="Generated docstrings will appear here..."
-            />
+            {showDiff && outputCode && inputCode ? (
+              <DiffView original={inputCode} modified={outputCode} />
+            ) : (
+              <CodeEditor
+                label="Output — With Docstrings"
+                value={outputCode}
+                readOnly
+                placeholder="Generated docstrings will appear here..."
+              />
+            )}
             {outputCode && (
               <div className="flex gap-2 mt-2 justify-end">
+                <Button
+                  onClick={() => setShowDiff((d) => !d)}
+                  variant={showDiff ? "default" : "outline"}
+                  size="sm"
+                  className={`gap-2 ${showDiff ? "bg-primary text-primary-foreground" : "border-border text-foreground hover:bg-secondary"}`}
+                >
+                  {showDiff ? <Code className="h-3.5 w-3.5" /> : <GitCompare className="h-3.5 w-3.5" />}
+                  {showDiff ? "Output" : "Diff"}
+                </Button>
                 <Button
                   onClick={handleCopy}
                   variant="outline"
